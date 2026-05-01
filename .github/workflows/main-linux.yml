@@ -1,11 +1,11 @@
 name: Build Polaris LLVM 16.0.6 for Linux
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:          # 手动触发
 
 jobs:
   build-linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04     # 必须是 Linux，不是 windows-2022
     steps:
     - name: Checkout Polaris source
       uses: actions/checkout@v4
@@ -18,20 +18,24 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ninja-build cmake
 
-    - name: Configure and Build
+    - name: Configure CMake (源码在 src/ 目录)
       run: |
-        cd src                              # 进入源码目录
+        cd src
         cmake -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_PROJECTS="clang" \
           -DLLVM_TARGETS_TO_BUILD="X86" \
           -DLLVM_ENABLE_ASSERTIONS=Off
-        ninja -C build clang               # 编译
+
+    - name: Build clang
+      run: |
+        cd src
+        ninja -C build clang
 
     - name: Package artifact
       run: |
         mkdir upload
-        cp src/build/bin/clang upload/     # 从 src/build/bin 里取产物
+        cp src/build/bin/clang upload/
 
     - uses: actions/upload-artifact@v4
       with:
